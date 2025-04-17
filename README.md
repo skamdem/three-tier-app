@@ -36,7 +36,7 @@ the 3-tier app uses
 	storage.yaml
 ```
 
-## 1/10 prerequisites
+### 1/10 prerequisites
 \# setup nginx ingress controller in a namespace **ingress-nginx**
 ```
 $ kubectl -n ingress-nginx get all 
@@ -61,7 +61,7 @@ $ cat /etc/hosts
 > 172.30.2.2 node01
 > 172.30.1.2 application.lab.mine
 
-## 2/10 set up the namespaces
+### 2/10 set up the namespaces
 ```
 $ kubectl create namespace app1
 $ kubectl create namespace data1
@@ -71,7 +71,7 @@ $ kubectl create namespace data1
 $ kubectl get ns
 ```
 
-## 3/10 set up the secrets 
+### 3/10 set up the secrets 
 \# create a secret to use with the mysql database
 ```
 $ kubectl -n data1 create secret generic mysql --from-literal=mysql-root-password='Very$ecure1#' 
@@ -81,7 +81,7 @@ $ kubectl -n data1 create secret generic mysql --from-literal=mysql-root-passwor
 $ kubectl get secrets -n data1
 ```
 
-## 4/10 set up the storage from folder **mysql**
+### 4/10 set up the storage from folder **mysql**
 ```
 $ kubectl create -f mysql/mysql-storage.yaml -f mysql/mysql-deploy.yaml
 ```
@@ -89,7 +89,7 @@ $ kubectl create -f mysql/mysql-storage.yaml -f mysql/mysql-deploy.yaml
 ```
 $ kubectl -n data1 get pv,pvc 
 ```
-## 5/10 setup the application from folder **flask_docker**
+### 5/10 setup the application from folder **flask_docker**
 \# create the flask docker container image for the application
 ```
 $ cd flask_docker
@@ -103,7 +103,7 @@ $ docker image build -t flask_docker .
 $ docker tag flask_docker localhost:5000/flask_docker
 $ docker push localhost:5000/flask_docker
 ```
-6/10 create a pod with the new image to run the application from folder **flask_docker**
+### 6/10 create a pod with the new image to run the application from folder **flask_docker**
 ```
 $ kubectl create -f flask_docker/test-app1.yaml
 ```
@@ -120,7 +120,7 @@ $ kubectl -n app1 expose pod test-app1 --port=6000  --name=test-app1-service
 $ kubectl -n app1 describe service test-app1 
 ```
 
-## 7/10 expose the application via an ingress controller from folder **ingress**
+### 7/10 expose the application via an ingress controller from folder **ingress**
 \# create the ingress resource pointing to the application
 ```
 $ kubectl create -f ingress/app1-ingress.yaml
@@ -129,7 +129,7 @@ $ kubectl create -f ingress/app1-ingress.yaml
 ```
 $ curl application.lab.mine:30080/test
 ```
-## 8/10 data portion of the three tier app from folder **mysql**
+### 8/10 data portion of the three tier app from folder **mysql**
 \# confirm database resources previously created
 ```
 $ kubectl get svc -n data1
@@ -167,7 +167,7 @@ $ mysql -h mysql-service -uroot -p'Very$ecure1#' -e 'use visitors; show tables; 
 $ exit
 ```
 
-## 9/10 build the read application in flask to read the data from that database from folder **flask_read_docker**
+### 9/10 build the read application in flask to read the data from that database from folder **flask_read_docker**
 \# test the basic application functionality to the database
 ```
 $ cd flask_read_docker
@@ -202,12 +202,12 @@ $ kubectl -n app1 describe service read-app1-service
 $ kubectl -n app1 delete ingress ingress 
 $ kubectl create -f ingress/complete-app1-ingress.yaml
 ```
-# test the ingress connection to BOTH applications
+\# test the ingress connection to BOTH applications
 ```
 $ curl application.lab.mine:30080/test
 $ curl application.lab.mine:30080/read
 ```
-## 10/10 securing the applications from folder **security**
+### 10/10 securing the applications from folder **security**
 \# create network policy to deny anything into data1
 ```
 $ kubectl create -f network_policy_deny.yaml
@@ -251,5 +251,4 @@ $ kubectl create -f secure-read-app1.yaml
 $ curl application.lab.mine:30080/read
 ```
 next step: add a flask application that can **write** data
-
 

@@ -5,7 +5,7 @@ the 3-tier app uses
 - flask 
 - mysql
 
-## folder structure
+### folder structure
 ```
 /flask_docker
 	Dockerfile -> docker file for creating the application image
@@ -56,10 +56,12 @@ $ grep app /etc/hosts
 
 $ cat /etc/hosts
 ```
-\# could contain at bottom
-> 127.0.0.1 controlplane
-> 172.30.2.2 node01
-> 172.30.1.2 application.lab.mine
+\# **/etc/hosts** could include 
+```
+127.0.0.1 controlplane
+172.30.2.2 node01
+172.30.1.2 application.lab.mine
+```
 
 ### 2/10 set up the namespaces
 ```
@@ -167,8 +169,7 @@ $ mysql -h mysql-service -uroot -p'Very$ecure1#' -e 'use visitors; show tables; 
 $ exit
 ```
 
-### 9/10 build the read application in flask to read the data from that database from folder **flask_read_docker**
-\# test the basic application functionality to the database
+### 9/10 setup the read application to read data from previous database from folder **flask_read_docker**
 ```
 $ cd flask_read_docker
 ```
@@ -197,12 +198,13 @@ $ kubectl -n app1 expose pod read-app1 --port=6000  --name=read-app1-service
 ```
 $ kubectl -n app1 describe service read-app1-service
 ```
-\# delete old ingress and redeploy the new ingress resource pointing to BOTH applications
+\# replace old ingress by new ingress resource pointing to BOTH applications
 ```
 $ kubectl -n app1 delete ingress ingress 
 $ kubectl create -f ingress/complete-app1-ingress.yaml
 ```
 \# test the ingress connection to BOTH applications
+\# this tests the application functionality to the database
 ```
 $ curl application.lab.mine:30080/test
 $ curl application.lab.mine:30080/read
@@ -223,12 +225,12 @@ $ curl application.lab.mine:30080/test
 $ curl application.lab.mine:30080/read
 ```
 
-\# create a mysql image-based pod in the default namespace and verify that it no longer connects to mysql-service in namespace **data1**
+\# create a mysql image-based pod in the **default **namespace and verify that it no longer connects to mysql-service in namespace **data1**
+\# second command below should hang without connecting
 ```
 $ kubectl run mysql-client --image=mysql:5.7 -it --rm --restart=Never -- /bin/bash
 $ mysql -h mysql-service.data1.svc.cluster.local -uroot -p'Very$ecure1#' -e 'use visitors; show tables; select * from persons'
 ```
-\# above command should hang without connnecting
 
 \# create a mysql image-based pod in the **app1** namespace and verify it still connects to mysql-service in namespace **data1**
 ```
@@ -243,6 +245,21 @@ $ kubectl -n app1 delete pod read-app1
 - *non-root* user
 - disallowed privilege escalation
 - read only filesystems 
+
+\# updated pod **read-app1** could include the following snippet
+```
+spec:
+ securityContext: 
+   runAsUser: 1000
+ nodeName: controlplane
+ containers:
+ - name: read-app1
+   image: localhost:5000/flask_read_docker:latest
+   securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+```
+
 ```
 $ kubectl create -f secure-read-app1.yaml
 ```

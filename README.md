@@ -6,6 +6,7 @@ the 3-tier app uses
 - mysql
 
 ## folder structure
+```
 /flask_docker
 	Dockerfile -> docker file for creating the application image
 	requirements.txt -> requirements file for flask and mysql
@@ -33,6 +34,7 @@ the 3-tier app uses
 /setup
 	ingress_create.yaml
 	storage.yaml
+```
 	
 ## 1/10 prerequisites
 \# setup nginx ingress controller in a namespace **ingress-nginx**
